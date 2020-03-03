@@ -87,7 +87,7 @@ int main() {
 	if (TTF_Init())
  		return 1;
 
-	screen = SDL_SetVideoMode(600,600,32,SDL_ANYFORMAT);
+	screen = SDL_SetVideoMode(600, 600, 32, SDL_ANYFORMAT);
 	if (!screen) {
 		TTF_Quit();
 		SDL_Quit();
