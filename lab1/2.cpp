@@ -17,23 +17,28 @@ class Apple {
 	SDL_Rect spritePos, pos;
 	int dy;
 	int radius;
+	bool isCollided;
 
 	Apple(SDL_Rect spritePosition, SDL_Rect surfacePosition, int deltaY, int radiusOfApple) {
 		spritePos = spritePosition;
 		pos = surfacePosition;
 		dy = deltaY;
 		radius = radiusOfApple;
+		isCollided = false;
 	}
 
-	bool update(SDL_Rect posOfHedgehog) {
+	bool update(SDL_Rect posOfHedgehog, int petRadius) {
 		if (pos.y + dy > 400 - spritePos.h) {
 			dy = 0;
 			pos.y = 400 - spritePos.h;
+			isCollided = true;
 		}
 		pos.y += dy;
 
-		if (distance(pos.x)) {
-
+		if (distance(pos.x + spritePos.w / 2, pos.y + spritePos.h / 2, posOfHedgehog.x + 20, posOfHedgehog.y + 20, radius, petRadius) <= 0) {
+			dy = 0;
+			isCollided = true;
+			return true;
 		}
 		return false;
 	}
@@ -49,7 +54,7 @@ class Hedgehog {
 
 	Hedgehog() {
 		spritePos = {0, 0, 40, 40};
-		pos = {20, 360, 0, 0};
+		pos = {20, 360, 40, 40};
 		dx = 1;
 		radius = 17;
 		dir = 1;
@@ -92,14 +97,15 @@ void Draw_Scene(SDL_Surface* background) {
 
 int main() {
 	srand(time(0));
-	SDL_Surface* background, * sprites;
+	SDL_Surface* background, * sprites, * tmp;
 	SDL_Event event;
 	std::vector<Apple> apples;
+	std::vector<SDL_Surface*> applesTmp;
 	std::vector<SDL_Rect> spriteRectangles = {{80, 0, 30, 33}, {110, 0, 40, 44}, {150, 0, 20, 22}};
 	std::vector<int> spriteRadiues = {15, 20, 10};
 	Hedgehog pet;
 
-	const int countOfApples = 4; // max possible 8 !!!!!
+	const int countOfApples = 4; // max possible 8
 
 	for (size_t i = 0, index = rand() % 3; i < countOfApples; i++, index = rand() % 3) {
 		apples.push_back(Apple(spriteRectangles[index], {50 + rand() % (scrwidth - 100), 0, 0, 0}, 1 + rand() % 2, spriteRadiues[index]));
@@ -108,7 +114,7 @@ int main() {
 			flag = false;
 			for (size_t j = 0; j < apples.size(); j++) {
 				if (j == i) continue;
-				if (distance(apples[i].pos.x, 0, apples[j].pos.x, 0, apples[i].radius, apples[j].radius) < 10) {
+				if (distance(apples[i].pos.x, 0, apples[j].pos.x, 0, apples[i].radius, apples[j].radius) < 40) {
 					flag = true;
 					apples[i].pos.x = 50 + rand() % (scrwidth - 100);
 				}
@@ -121,7 +127,7 @@ int main() {
 		return 1;
 	}
 
-	SDL_Surface* screen = SDL_SetVideoMode(scrwidth, scrheight, scrdepth, SDL_ANYFORMAT);
+	SDL_Surface* screen = SDL_SetVideoMode(scrwidth, scrheight, scrdepth, SDL_HWSURFACE|SDL_DOUBLEBUF);
 	if (!screen) {
 		std::cout << "Unable to set 600x600 video: " << SDL_GetError() << std::endl;
 		SDL_Quit();
@@ -136,6 +142,17 @@ int main() {
 		SDL_DOUBLEBUF, 600, 480, scrdepth,
 		screen->format->Rmask, screen->format->Gmask,
 		screen->format->Bmask, screen->format->Amask);
+	tmp = SDL_CreateRGBSurface(SDL_HWSURFACE |
+		SDL_DOUBLEBUF, 40, 40, scrdepth,
+		screen->format->Rmask, screen->format->Gmask,
+		screen->format->Bmask, screen->format->Amask);
+
+	for (size_t i = 0; i < countOfApples; i++) {
+		applesTmp.push_back(SDL_CreateRGBSurface(SDL_HWSURFACE |
+			SDL_DOUBLEBUF, apples[i].spritePos.w, apples[i].spritePos.h, scrdepth,
+			screen->format->Rmask, screen->format->Gmask,
+			screen->format->Bmask, screen->format->Amask));
+	}
 
 	if(!(background && sprites) ) {
 		std::cout << "Unable to create temporary surfaces: " << SDL_GetError() << std::endl;
@@ -145,6 +162,8 @@ int main() {
 
 	Draw_Scene(background);
 	SDL_BlitSurface(background, NULL, screen, NULL);
+
+	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY, SDL_MapRGB(sprites->format, 100,181,246));
 	Draw_FillRect(sprites, 0, 0, 170, 44, SDL_MapRGB(sprites->format, 100,181,246));
 
 	Draw_Hedgehog(sprites, 60, 25, -1);
@@ -156,6 +175,7 @@ int main() {
 	for (size_t i = 0; i < countOfApples; i++) {
 		SDL_BlitSurface(sprites, &apples[i].spritePos, screen, &apples[i].pos);
 	}
+	SDL_BlitSurface(sprites, &pet.spritePos, screen, &pet.pos);
 
 	SDL_Flip(screen);
 	while(SDL_WaitEvent(&event)) {
@@ -166,22 +186,34 @@ int main() {
 			SDL_Quit();
 			return 0;
 		}
-		if (event.key.keysym.sym == SDLK_KP_ENTER) {
+		if (event.key.keysym.sym == SDLK_RETURN) {
+			for (size_t i = 0; i < countOfApples; i++) {
+				SDL_FillRect(screen, &apples[i].pos, SDL_MapRGB(background->format, 100,181,246));
+			}
+			SDL_FillRect(screen, &pet.pos, SDL_MapRGB(background->format, 100,181,246));
 			int step = 0;
-			bool flag = true;
-			while (step < (50*7) && flag) {
+			bool isAllCollision = false;
+			while (step < (50*30) && !(isAllCollision && pet.isCollision)) {
+				isAllCollision = true;
 				pet.update();
+				SDL_BlitSurface(screen, &pet.pos, tmp, NULL);
 				SDL_BlitSurface(sprites, &pet.spritePos, screen, &pet.pos);
 				for (size_t i = 0; i < countOfApples; i++) {
-					apples[i].update();
+					if (apples[i].update(pet.pos, pet.radius)) {
+						pet.isCollision = true;
+					}
+					isAllCollision *= apples[i].isCollided;
+					SDL_BlitSurface(screen, &apples[i].pos, applesTmp[i], NULL);
 					SDL_BlitSurface(sprites, &apples[i].spritePos, screen, &apples[i].pos);
 				}
 				step++;
 				SDL_Flip(screen);
 				SDL_Delay(20);
+				SDL_BlitSurface(tmp, NULL, screen, &pet.pos);
+				for (size_t i = 0; i < countOfApples; i++) {
+					SDL_BlitSurface(applesTmp[i], NULL, screen, &apples[i].pos);
+				}
 			}
-			SDL_Quit();
-			return 0;
 		}
 	}
 
