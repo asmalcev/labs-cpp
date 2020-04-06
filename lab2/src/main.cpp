@@ -9,6 +9,7 @@ void help() {
 	std::cout << ">> c - create new Triangle to compare with main object" << std::endl;
 	std::cout << ">> g [1 / 2 / 3 / 4 / 5] - get [side / angle1 / angle2 / sides / bisectors]" << std::endl;
 	std::cout << ">> s [1 / 2 / 3] - set [side / angle1 / angle2]" << std::endl;
+	std::cout << ">> t - toggle angle mode [degrees / radians]" << std::endl;
 	std::cout << ">> q - quit" << std::endl;
 }
 
@@ -17,8 +18,8 @@ void clear() {
 }
 
 int main() {
-	Triangle figure(3, 0.9424, 0.4712);
-	Triangle figure2;
+	Triangle figure(3, 60, 30, true);
+	Triangle figure2(0, 0, 0, true);
 	Triangle::lines lines;
 
 	char command;
@@ -40,8 +41,9 @@ int main() {
 
 			case 'c':
 				clear();
+				std::cout << "Please, enter angles in degrees" << std::endl;
 				figure2.readUserInput();
-				std::cout << "figure == figure2 is " << (figure == figure2 ? "true" : "else") << std::endl;
+				std::cout << "figure == figure2 is " << (figure == figure2 ? "true" : "false") << std::endl;
 				break;
 
 			case 'g':
@@ -108,6 +110,10 @@ int main() {
 						clear();
 						std::cout << "incorrect argument" << std::endl;
 				}
+				break;
+
+			case 't':
+				std::cout << "Now angles are in " << (figure.toggleDegrees() ? "degrees" : "radians") << std::endl;
 				break;
 
 			case 'q':

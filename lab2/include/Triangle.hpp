@@ -1,12 +1,13 @@
 #pragma once
 #include "Logger.hpp"
 
-#define DEBUG
+// #define DEBUG
 
 class Triangle {
   protected:
   float side, angle2, angle3;
 	float getBisector(float a, float b, float c);
+	bool degrees;
 
 	#ifdef DEBUG
   Logger* logger;
@@ -19,8 +20,7 @@ class Triangle {
     float line3;
   };
 
-  Triangle();
-  Triangle(float lengthOfSide, float firstAngle, float secondAngle);
+  Triangle(float lengthOfSide, float firstAngle, float secondAngle, bool isDegrees);
 	Triangle(const Triangle &other);
 	~Triangle();
 	float getSide() const;
@@ -35,5 +35,6 @@ class Triangle {
 	void readUserInput();
 	void printFields();
 	bool operator==(Triangle& left);
+	bool toggleDegrees();
 
 };

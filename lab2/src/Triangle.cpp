@@ -8,21 +8,11 @@ float Triangle::getBisector(float a, float b, float c) {
 	return sqrt(a*b*(sum + c)*(sum - c)) / sum;
 }
 
-Triangle::Triangle() {
-  side = 0;
-  angle2 = 0;
-  angle3 = 0;
-
-	#ifdef DEBUG
-		logger = new Logger("../logs/logs", "Triangle");
-		logger->printLog("constructor", "object has been created with no-args");
-	#endif
-}
-
-Triangle::Triangle(float lengthOfSide, float firstAngle, float secondAngle) {
+Triangle::Triangle(float lengthOfSide, float firstAngle, float secondAngle, bool isDegrees) {
   side = lengthOfSide;
   angle2 = firstAngle;
   angle3 = secondAngle;
+	degrees = isDegrees;
 
 	#ifdef DEBUG
 		logger = new Logger("../logs/logs", "Triangle");
@@ -34,6 +24,7 @@ Triangle::Triangle(const Triangle &other) {
 	side = other.side;
 	angle2 = other.angle2;
 	angle3 = other.angle3;
+	degrees = other.degrees;
 
 	#ifdef DEBUG
 		logger->printLog("copyConstructor", "object has been copied");
@@ -116,9 +107,14 @@ bool Triangle::setAngle2(float a) {
 Triangle::lines Triangle::getSides() {
   lines sides;
   sides.line1 = side;
-	float angle1 = M_PI - angle2 - angle3;
-	sides.line2 = side / angle1 * angle2;
-	sides.line3 = side / angle1 * angle3;
+	float angle1 = degrees ? 180 - angle2 - angle3  : M_PI - angle2 - angle3;
+	if (degrees) {
+		sides.line2 = side / sin(angle1 * M_PI / 180) * sin(angle2 * M_PI / 180);
+		sides.line3 = side / sin(angle1 * M_PI / 180) * sin(angle3 * M_PI / 180);
+	} else {
+		sides.line2 = side / sin(angle1) * sin(angle2);
+		sides.line3 = side / sin(angle1) * sin(angle3);
+	}
 
 	#ifdef DEBUG
 		logger->printLog("getSides", "successfully returned sides");
@@ -165,7 +161,7 @@ void Triangle::readUserInput() {
 }
 
 void Triangle::printFields() {
-	std::cout << "side: " << side << "; angle1: " << angle2 << " radians; angle2: " << angle3 << " radians;" << std::endl;
+	std::cout << "side: " << side << "; angle1: " << angle2 << " " << (degrees ? "degrees" : "radians") << "; angle2: " << angle3 << " " << (degrees ? "degrees" : "radians") << ";" << std::endl;
 	#ifdef DEBUG
 		logger->printLog("printFields", "successfully printed fields of class");
 	#endif
@@ -176,6 +172,24 @@ bool Triangle::operator == (Triangle& left) {
 	float s2 = getArea();
 
 	return abs(s1 - s2) < __FLT_EPSILON__;
+}
+
+bool Triangle::toggleDegrees() {
+	if (degrees) {
+		degrees = false;
+		angle2 *= (M_PI / 180);
+		angle3 *= (M_PI / 180);
+	} else {
+		degrees = true;
+		angle2 *= (180 / M_PI);
+		angle3 *= (180 / M_PI);
+	}
+
+	#ifdef DEBUG
+		logger->printLog("toggleDegrees", "toggled degrees/radians mode");
+	#endif
+
+	return degrees;
 }
 
 std::ostream& operator << (std::ostream &out, Triangle::lines& sides) {

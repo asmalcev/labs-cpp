@@ -2,11 +2,11 @@
 
 class Logger {
   protected:
-  char* className;
+  std::string className;
   FILE* logStream;
 
   public:
-  Logger(char* path, char* name);
+  Logger(char* path, std::string name);
   ~Logger();
-  void printLog(char* method, char* message);
+  void printLog(std::string method, std::string message);
 };
