@@ -1,7 +1,12 @@
 #pragma once
 #include "Logger.hpp"
 
-// #define DEBUG
+// #define DEBUG_BUILD
+#ifdef DEBUG_BUILD
+	#define DEBUG(x, y) logger->printLog(x, y)
+#else
+	#define DEBUG(x, y)
+#endif
 
 class Triangle {
   protected:
@@ -9,7 +14,7 @@ class Triangle {
 	float getBisector(float a, float b, float c);
 	bool degrees;
 
-	#ifdef DEBUG
+	#ifdef DEBUG_BUILD
   Logger* logger;
 	#endif
 

@@ -4,13 +4,13 @@
 #include "Triangle.hpp"
 
 void help() {
-	std::cout << ">> h - list of commands" << std::endl;
-	std::cout << ">> p - print the values of fields" << std::endl;
-	std::cout << ">> c - create new Triangle to compare with main object" << std::endl;
-	std::cout << ">> g [1 / 2 / 3 / 4 / 5] - get [side / angle1 / angle2 / sides / bisectors]" << std::endl;
-	std::cout << ">> s [1 / 2 / 3] - set [side / angle1 / angle2]" << std::endl;
-	std::cout << ">> t - toggle angle mode [degrees / radians]" << std::endl;
-	std::cout << ">> q - quit" << std::endl;
+	std::cout << "h - list of commands" << std::endl;
+	std::cout << "p - print the values of fields" << std::endl;
+	std::cout << "c - create new Triangle to compare with main object" << std::endl;
+	std::cout << "g [1 / 2 / 3 / 4 / 5] - get [side / angle1 / angle2 / sides / bisectors]" << std::endl;
+	std::cout << "s [1 / 2 / 3] - set [side / angle1 / angle2]" << std::endl;
+	std::cout << "t - toggle angle mode [degrees / radians]" << std::endl;
+	std::cout << "q - quit" << std::endl;
 }
 
 void clear() {

@@ -8,16 +8,16 @@ float Triangle::getBisector(float a, float b, float c) {
 	return sqrt(a*b*(sum + c)*(sum - c)) / sum;
 }
 
-Triangle::Triangle(float lengthOfSide, float firstAngle, float secondAngle, bool isDegrees) {
+Triangle::Triangle(float lengthOfSide, float firstAngle, float secondAngle, bool inDegrees) {
   side = lengthOfSide;
   angle2 = firstAngle;
   angle3 = secondAngle;
-	degrees = isDegrees;
+	degrees = inDegrees;
 
-	#ifdef DEBUG
+	#ifdef DEBUG_BUILD
 		logger = new Logger("../logs/logs", "Triangle");
-		logger->printLog("constructor", "object has been created");
 	#endif
+	DEBUG("constructor", "object has been created");
 }
 
 Triangle::Triangle(const Triangle &other) {
@@ -26,50 +26,38 @@ Triangle::Triangle(const Triangle &other) {
 	angle3 = other.angle3;
 	degrees = other.degrees;
 
-	#ifdef DEBUG
-		logger->printLog("copyConstructor", "object has been copied");
+	DEBUG("copyConstructor", "object has been copied");
+	#ifdef DEBUG_BUILD
 		delete logger;
 	#endif
 }
 
 Triangle::~Triangle() {
-	#ifdef DEBUG
-		logger->printLog("destructor", "object has been deleted");
-	#endif
+	DEBUG("destructor", "object has been deleted");
 }
 
 float Triangle::getSide() const {
-	#ifdef DEBUG
-		logger->printLog("getSide", "returned side");
-	#endif
+	DEBUG("getSide", "returned side");
 	return side;
 }
 
 float Triangle::getAngle1() const {
-	#ifdef DEBUG
-		logger->printLog("getAngle1", "returned angle2");
-	#endif
+	DEBUG("getAngle1", "returned angle2");
 	return angle2;
 }
 
 float Triangle::getAngle2() const {
-	#ifdef DEBUG
-		logger->printLog("getAngle2", "returned angle3");
-	#endif
+	DEBUG("getAngle2", "returned angle3");
 	return angle3;
 }
 
 bool Triangle::setSide(float s) {
 	side = s;
 	if (side == s) {
-		#ifdef DEBUG
-			logger->printLog("setSide", "value of side has been changed");
-		#endif
+		DEBUG("setSide", "value of side has been changed");
 		return true;
 	} else {
-		#ifdef DEBUG
-			logger->printLog("setSide", "couldn't change side value");
-		#endif
+		DEBUG("setSide", "couldn't change side value");
 		return false;
 	}
 }
@@ -77,14 +65,10 @@ bool Triangle::setSide(float s) {
 bool Triangle::setAngle1(float a) {
 	angle2 = a;
 	if (angle2 == a) {
-		#ifdef DEBUG
-			logger->printLog("setAngle1", "value of angle1 has been changed");
-		#endif
+		DEBUG("setAngle1", "value of angle1 has been changed");
 		return true;
 	} else {
-		#ifdef DEBUG
-			logger->printLog("setAngle1", "couldn't change angle1 value");
-		#endif
+		DEBUG("setAngle1", "couldn't change angle1 value");
 		return false;
 	}
 }
@@ -92,14 +76,10 @@ bool Triangle::setAngle1(float a) {
 bool Triangle::setAngle2(float a) {
 	angle3 = a;
 	if (angle3 == a) {
-		#ifdef DEBUG
-			logger->printLog("setAngle2", "value of angle2 has been changed");
-		#endif
+		DEBUG("setAngle2", "value of angle2 has been changed");
 		return true;
 	} else {
-		#ifdef DEBUG
-			logger->printLog("setAngle2", "couldn't change angle2 value");
-		#endif
+		DEBUG("setAngle2", "couldn't change angle2 value");
 		return false;
 	}
 }
@@ -116,9 +96,7 @@ Triangle::lines Triangle::getSides() {
 		sides.line3 = side / sin(angle1) * sin(angle3);
 	}
 
-	#ifdef DEBUG
-		logger->printLog("getSides", "successfully returned sides");
-	#endif
+	DEBUG("getSides", "successfully returned sides");
 
 	return sides;
 }
@@ -129,20 +107,21 @@ Triangle::lines Triangle::getBisectors() {
 	tmp.line2 = getBisector(sides.line1, sides.line3, sides.line2);
 	tmp.line3 = getBisector(sides.line2, sides.line1, sides.line3);
 
-	#ifdef DEBUG
-		logger->printLog("getBisectors", "successfully returned bisectors");
-	#endif
+	DEBUG("getBisectors", "successfully returned bisectors");
 
 	return tmp;
 }
 
 float Triangle::getArea() {
-	float angle1 = M_PI - angle2 - angle3;
-	float side2 = side / angle1 * angle2;
+	float angle1 = 0;
+	if (degrees) {
+		angle1 = M_PI - (angle2 + angle3) * M_PI / 180;
+	} else {
+		angle1 = M_PI - angle2 - angle3;
+	}	
+	float side2 = side / sin(angle1) * sin(angle2);
 
-	#ifdef DEBUG
-		logger->printLog("getArea", "successfully returned area");
-	#endif
+	DEBUG("getArea", "successfully returned area");
 
 	return sin(angle3) * side * side2 / 2;
 }
@@ -155,23 +134,19 @@ void Triangle::readUserInput() {
 	std::cout << "Enter second angle: ";
 	std::cin >> angle3;
 
-	#ifdef DEBUG
-		logger->printLog("readUserInput", "successfully read user input");
-	#endif
+	DEBUG("readUserInput", "successfully read user input");
 }
 
 void Triangle::printFields() {
 	std::cout << "side: " << side << "; angle1: " << angle2 << " " << (degrees ? "degrees" : "radians") << "; angle2: " << angle3 << " " << (degrees ? "degrees" : "radians") << ";" << std::endl;
-	#ifdef DEBUG
-		logger->printLog("printFields", "successfully printed fields of class");
-	#endif
+	DEBUG("printFields", "successfully printed fields of class");
 }
 
 bool Triangle::operator == (Triangle& left) {
 	float s1 = left.getArea();
 	float s2 = getArea();
-
-	return abs(s1 - s2) < __FLT_EPSILON__;
+	std::cout << s1 << " " << s2 << " ";
+	return (fabs(s1 - s2) < __FLT_EPSILON__);
 }
 
 bool Triangle::toggleDegrees() {
@@ -185,9 +160,7 @@ bool Triangle::toggleDegrees() {
 		angle3 *= (180 / M_PI);
 	}
 
-	#ifdef DEBUG
-		logger->printLog("toggleDegrees", "toggled degrees/radians mode");
-	#endif
+	DEBUG("toggleDegrees", "toggled degrees/radians mode");
 
 	return degrees;
 }
