@@ -8,11 +8,17 @@ float Triangle::getBisector(float a, float b, float c) {
 	return sqrt(a*b*(sum + c)*(sum - c)) / sum;
 }
 
-Triangle::Triangle(float lengthOfSide, float firstAngle, float secondAngle, bool inDegrees) {
+Triangle::Triangle(float lengthOfSide, float firstAngle, float secondAngle) {
   side = lengthOfSide;
   angle2 = firstAngle;
   angle3 = secondAngle;
-	degrees = inDegrees;
+
+	if (angle2 + angle3 >= M_PI) {
+		throw std::invalid_argument("Sum of 2 angles should be less than Pi");
+	}
+	if (side <= 0 || angle2 <= 0 || angle3 <= 0) {
+		throw std::invalid_argument("Side and angles should be bellow 0");
+	}
 
 	#ifdef DEBUG_BUILD
 		logger = new Logger("../logs/logs", "Triangle");
@@ -24,7 +30,6 @@ Triangle::Triangle(const Triangle &other) {
 	side = other.side;
 	angle2 = other.angle2;
 	angle3 = other.angle3;
-	degrees = other.degrees;
 
 	DEBUG("copyConstructor", "object has been copied");
 	#ifdef DEBUG_BUILD
@@ -52,49 +57,41 @@ float Triangle::getAngle2() const {
 }
 
 bool Triangle::setSide(float s) {
-	side = s;
-	if (side == s) {
-		DEBUG("setSide", "value of side has been changed");
-		return true;
-	} else {
-		DEBUG("setSide", "couldn't change side value");
+	if (s < 0) {
+		DEBUG("setSide", "incorrect argument");
 		return false;
 	}
+	side = s;
+	DEBUG("setSide", "value of side has been changed");
+	return true;
 }
 
 bool Triangle::setAngle1(float a) {
-	angle2 = a;
-	if (angle2 == a) {
-		DEBUG("setAngle1", "value of angle1 has been changed");
-		return true;
-	} else {
-		DEBUG("setAngle1", "couldn't change angle1 value");
+	if (a < 0 || a >= M_PI || a + angle3 >= M_PI) {
+		DEBUG("setAngle1", "incorrect argument");
 		return false;
 	}
+	angle2 = a;
+	DEBUG("setAngle1", "value of angle1 has been changed");
+	return true;
 }
 
 bool Triangle::setAngle2(float a) {
-	angle3 = a;
-	if (angle3 == a) {
-		DEBUG("setAngle2", "value of angle2 has been changed");
-		return true;
-	} else {
-		DEBUG("setAngle2", "couldn't change angle2 value");
+	if (a < 0 || a >= M_PI || a + angle2 >= M_PI) {
+		DEBUG("setAngle2", "incorrect argument");
 		return false;
 	}
+	angle3 = a;
+	DEBUG("setAngle2", "value of angle2 has been changed");
+	return true;
 }
 
 Triangle::lines Triangle::getSides() {
   lines sides;
   sides.line1 = side;
-	float angle1 = degrees ? 180 - angle2 - angle3  : M_PI - angle2 - angle3;
-	if (degrees) {
-		sides.line2 = side / sin(angle1 * M_PI / 180) * sin(angle2 * M_PI / 180);
-		sides.line3 = side / sin(angle1 * M_PI / 180) * sin(angle3 * M_PI / 180);
-	} else {
-		sides.line2 = side / sin(angle1) * sin(angle2);
-		sides.line3 = side / sin(angle1) * sin(angle3);
-	}
+	float angle1 = M_PI - angle2 - angle3;
+	sides.line2 = side / sin(angle1) * sin(angle2);
+	sides.line3 = side / sin(angle1) * sin(angle3);
 
 	DEBUG("getSides", "successfully returned sides");
 
@@ -114,11 +111,7 @@ Triangle::lines Triangle::getBisectors() {
 
 float Triangle::getArea() {
 	float angle1 = 0;
-	if (degrees) {
-		angle1 = M_PI - (angle2 + angle3) * M_PI / 180;
-	} else {
-		angle1 = M_PI - angle2 - angle3;
-	}	
+	angle1 = M_PI - angle2 - angle3;
 	float side2 = side / sin(angle1) * sin(angle2);
 
 	DEBUG("getArea", "successfully returned area");
@@ -127,42 +120,36 @@ float Triangle::getArea() {
 }
 
 void Triangle::readUserInput() {
-	std::cout << "Enter length of side: ";
-	std::cin >> side;
-	std::cout << "Enter first angle: ";
-	std::cin >> angle2;
-	std::cout << "Enter second angle: ";
-	std::cin >> angle3;
+	int control = 0;
+	do {
+		std::cout << "Enter length of side: ";
+		std::cin >> side;
+		control = std::cin.fail();
+	} while(control);
+
+	do {
+		std::cout << "Enter first angle: ";
+		std::cin >> angle2;
+		if (std::cin.fail() || angle2 >= M_PI) {
+			control = 1;
+		}
+	} while(control);
+	
+	do {
+		std::cout << "Enter second angle: ";
+		std::cin >> angle3;
+		if (std::cin.fail() || angle2 >= M_PI || angle2 + angle3 >= M_PI) {
+			control = 1;
+		}
+	} while (control);
 
 	DEBUG("readUserInput", "successfully read user input");
 }
 
-void Triangle::printFields() {
-	std::cout << "side: " << side << "; angle1: " << angle2 << " " << (degrees ? "degrees" : "radians") << "; angle2: " << angle3 << " " << (degrees ? "degrees" : "radians") << ";" << std::endl;
-	DEBUG("printFields", "successfully printed fields of class");
-}
-
 bool Triangle::operator == (Triangle& left) {
 	float s1 = left.getArea();
-	float s2 = getArea();
-	std::cout << s1 << " " << s2 << " ";
-	return (fabs(s1 - s2) < __FLT_EPSILON__);
-}
-
-bool Triangle::toggleDegrees() {
-	if (degrees) {
-		degrees = false;
-		angle2 *= (M_PI / 180);
-		angle3 *= (M_PI / 180);
-	} else {
-		degrees = true;
-		angle2 *= (180 / M_PI);
-		angle3 *= (180 / M_PI);
-	}
-
-	DEBUG("toggleDegrees", "toggled degrees/radians mode");
-
-	return degrees;
+	float s2 = this->getArea();
+	return (fabs(s1 - s2) <= __FLT_EPSILON__);
 }
 
 std::ostream& operator << (std::ostream &out, Triangle::lines& sides) {

@@ -12,7 +12,6 @@ class Triangle {
   protected:
   float side, angle2, angle3;
 	float getBisector(float a, float b, float c);
-	bool degrees;
 
 	#ifdef DEBUG_BUILD
   Logger* logger;
@@ -25,7 +24,7 @@ class Triangle {
     float line3;
   };
 
-  Triangle(float lengthOfSide, float firstAngle, float secondAngle, bool isDegrees);
+  Triangle(float lengthOfSide, float firstAngle, float secondAngle);
 	Triangle(const Triangle &other);
 	~Triangle();
 	float getSide() const;
@@ -38,8 +37,6 @@ class Triangle {
 	lines getBisectors();
 	float getArea();
 	void readUserInput();
-	void printFields();
 	bool operator==(Triangle& left);
-	bool toggleDegrees();
 
 };

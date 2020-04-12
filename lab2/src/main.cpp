@@ -9,7 +9,6 @@ void help() {
 	std::cout << "c - create new Triangle to compare with main object" << std::endl;
 	std::cout << "g [1 / 2 / 3 / 4 / 5] - get [side / angle1 / angle2 / sides / bisectors]" << std::endl;
 	std::cout << "s [1 / 2 / 3] - set [side / angle1 / angle2]" << std::endl;
-	std::cout << "t - toggle angle mode [degrees / radians]" << std::endl;
 	std::cout << "q - quit" << std::endl;
 }
 
@@ -18,8 +17,8 @@ void clear() {
 }
 
 int main() {
-	Triangle figure(3, 60, 30, true);
-	Triangle figure2(0, 0, 0, true);
+	Triangle figure(3, 1.0472, 0.523599);
+	Triangle figure2(1, 1, 1);
 	Triangle::lines lines;
 
 	char command;
@@ -36,12 +35,12 @@ int main() {
 
 			case 'p':
 				clear();
-				figure.printFields();
+				std::cout << "side: " << figure.getSide() << "; angle1: " << figure.getAngle1() << " radians; angle2: " << figure.getAngle2() << " radians;" << std::endl;
 				break;
 
 			case 'c':
 				clear();
-				std::cout << "Please, enter angles in degrees" << std::endl;
+				std::cout << "Please, enter angles in radians" << std::endl;
 				figure2.readUserInput();
 				std::cout << "figure == figure2 is " << (figure == figure2 ? "true" : "false") << std::endl;
 				break;
@@ -78,7 +77,7 @@ int main() {
 
 					default:
 						clear();
-						std::cout << "incorrect argument" << std::endl;
+						std::cout << "Incorrect argument" << std::endl;
 				}
 				break;
 
@@ -89,31 +88,33 @@ int main() {
 						clear();
 						std::cout << "Enter length of side: ";
 						std::cin >> value;
-						figure.setSide(value);
+						if (!figure.setSide(value)) {
+							std::cout << " >> Incorrect argument. Side value didn't change" << std::endl;
+						}
 						break;
 					
 					case 2:
 						clear();
 						std::cout << "Enter first angle: ";
 						std::cin >> value;
-						figure.setSide(value);
+						if (!figure.setAngle1(value)) {
+							std::cout << " >> Incorrect argument. Angle1 value didn't change" << std::endl;
+						}
 						break;
 
 					case 3:
 						clear();
 						std::cout << "Enter second angle: ";
 						std::cin >> value;
-						figure.setSide(value);
+						if (!figure.setAngle2(value)) {
+							std::cout << " >> Incorrect argument. Angle2 value didn't change" << std::endl;
+						}
 						break;
 
 					default:
 						clear();
-						std::cout << "incorrect argument" << std::endl;
+						std::cout << "Incorrect argument" << std::endl;
 				}
-				break;
-
-			case 't':
-				std::cout << "Now angles are in " << (figure.toggleDegrees() ? "degrees" : "radians") << std::endl;
 				break;
 
 			case 'q':
@@ -121,7 +122,7 @@ int main() {
 			
 			default:
 				clear();
-				std::cout << "unknown command" << std::endl;
+				std::cout << "Unknown command" << std::endl;
 		}
 	}
 }
