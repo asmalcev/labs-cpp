@@ -20,20 +20,16 @@ StringID::StringID(char const * str) {
   LOG1()
   std::cmatch m;
   std::regex e ("[^(a-z)(A-Z)(0-9)_]");
-  if (std::regex_search(str, m, e)) {
-    m_length = 0;
-    m_size = 8;
-    m_str = new char[m_size];
-    for (size_t i = 0; i < m_size; i++) {
-      m_str[i] = '\0';
-    }
-  } else {
+  if (!std::regex_search(str, m, e)) {
+    delete[] m_str;
     m_size = m_length = strlen(str);
-    m_str = new char[m_size];
+    m_str = new char[m_size + 1];
     if (m_str != nullptr) {
+      for (size_t i = 0; i < m_size + 1; i++) {
+        m_str[i] = '\0';
+      }
       strncpy(m_str, str, m_size);
     }
-    m_str[m_length] = '\0';
   }
 }
 

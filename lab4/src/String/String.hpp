@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 
-// #define DEBUG
+#define DEBUG
 #ifdef DEBUG
   #define LOG(...) printf(__VA_ARGS__)
 #else

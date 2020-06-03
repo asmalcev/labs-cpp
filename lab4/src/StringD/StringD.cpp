@@ -18,17 +18,14 @@ StringD::StringD(char const * str) {
   std::cmatch m;
   std::regex e ("[^(0-9)+-]");
   std::regex e2 ("[+-]");
-  if (std::regex_search(str, m, e) || std::regex_search(str + 1, m, e2)) {
-    m_length = 0;
-    m_size = 8;
-    m_str = new char[m_size];
-    for (size_t i = 0; i < m_size; i++) {
-      m_str[i] = '\0';
-    }
-  } else {
+  if (!(std::regex_search(str, m, e) || std::regex_search(str + 1, m, e2))) {
+    delete[] m_str;
     m_size = m_length = strlen(str);
     m_str = new char[m_size];
     if (m_str != nullptr) {
+      for (size_t i = 0; i < m_size + 1; i++) {
+        m_str[i] = '\0';
+      }
       strncpy(m_str, str, m_size);
     }
     m_str[m_length] = '\0';
